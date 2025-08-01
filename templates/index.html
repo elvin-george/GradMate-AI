@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Campus Buddy AI</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .section { margin-bottom: 20px; }
+    textarea { width: 100%; height: 100px; }
+    button { margin-top: 10px; padding: 10px 15px; }
+  </style>
+</head>
+<body>
+  <h1>Campus Buddy AI Test</h1>
+
+  <div class="section">
+    <h3>Chatbot</h3>
+    <input type="text" id="chatInput" placeholder="Ask AI something..." />
+    <button onclick="askChat()">Send</button>
+    <div id="chatResponse"></div>
+  </div>
+
+  <div class="section">
+    <h3>Note Summarizer</h3>
+    <textarea id="notesInput" placeholder="Paste notes here"></textarea>
+    <button onclick="summarizeNotes()">Summarize</button>
+    <div id="summaryResponse"></div>
+  </div>
+
+  <div class="section">
+    <h3>Quiz Generator</h3>
+    <textarea id="quizInput" placeholder="Paste content for quiz"></textarea>
+    <button onclick="generateQuiz()">Generate Quiz</button>
+    <div id="quizResponse"></div>
+  </div>
+
+  <script>
+    async function askChat() {
+      const prompt = document.getElementById('chatInput').value;
+      const res = await fetch('/askai', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt})
+      });
+      const data = await res.json();
+      document.getElementById('chatResponse').innerText = data.response;
+    }
+
+    async function summarizeNotes() {
+      const text = document.getElementById('notesInput').value;
+      const res = await fetch('/summarize', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text})
+      });
+      const data = await res.json();
+      document.getElementById('summaryResponse').innerText = data.summary;
+    }
+
+    async function generateQuiz() {
+      const text = document.getElementById('quizInput').value;
+      const res = await fetch('/quiz', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text})
+      });
+      const data = await res.json();
+      document.getElementById('quizResponse').innerText = data.quiz;
+    }
+  </script>
+</body>
+</html>
