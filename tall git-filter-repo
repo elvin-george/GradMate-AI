@@ -1,0 +1,107 @@
+[33mcommit ad8127e8c0cca08c438b2be9a5fc28ba9d123882[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Thu Sep 4 10:23:21 2025 +0530
+
+    new chatbot query
+
+A	.env
+M	.gitignore
+M	ai_modules/chatbot.py
+A	firebase-key.json
+
+[33mcommit 3c5dab466af8027c5ee685bf1e027c4da67d99d0[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Thu Sep 4 10:15:36 2025 +0530
+
+    Prototype project
+
+M	README.md
+A	__pycache__/firebase_config.cpython-313.pyc
+M	app.py
+A	create_officer.py
+A	firestore-indexes.md
+M	requirements.txt
+A	run.py
+M	templates/index.html
+A	templates/login.html
+A	templates/officer_dashboard.html
+A	templates/officer_drives.html
+A	templates/officer_filter.html
+A	templates/officer_messages.html
+A	templates/officer_training.html
+A	templates/signup.html
+A	templates/student_chatbot.html
+A	templates/student_dashboard.html
+A	templates/student_messages.html
+A	templates/student_placements.html
+A	templates/student_quizgen.html
+A	templates/student_resume.html
+A	templates/student_studyplanner.html
+A	templates/student_summarizer.html
+
+[33mcommit 1c611ef1a5b1f2ff824dcc0a4cc0e03cc6280a11[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Wed Sep 3 09:49:50 2025 +0530
+
+    Add firestore_utils.py, update firebase_config.py and app.py, update README.md and requirements.txt
+
+M	app.py
+M	firebase_utils/firebase_config.py
+A	firebase_utils/firestore_utils.py
+
+[33mcommit 81982755ec61540832baa38f96f453088c8779f0[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Wed Sep 3 09:48:10 2025 +0530
+
+    Update .gitignore to exclude firebase-key.json and .env
+
+M	.gitignore
+
+[33mcommit e4bf1049451be62b3bff57edde49d5ca5f92a556[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Mon Aug 4 21:30:00 2025 +0530
+
+    Update README.md
+
+M	README.md
+
+[33mcommit f384a43cb7d07934e3a6218c10c1f145ab49c185[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Fri Aug 1 19:57:41 2025 +0530
+
+    Stop tracking .env file
+
+D	.env
+
+[33mcommit 8972388e96dff487888172919456b3c287d55553[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Fri Aug 1 19:45:35 2025 +0530
+
+    Remove serviceAccountKey.json from Git history
+
+D	serviceAccountKey.json
+
+[33mcommit 148a11b8ee9802bd50a0f4f2e4e1073d23f5cafe[m
+Author: Elvin George <elvinmjgeorge@gmail.com>
+Date:   Fri Aug 1 19:42:47 2025 +0530
+
+    Clean slate: remove history and secrets
+
+A	.env
+A	.gitignore
+A	README.md
+A	ai_modules/__pycache__/chatbot.cpython-313.pyc
+A	ai_modules/__pycache__/gemini_config.cpython-313.pyc
+A	ai_modules/__pycache__/quizgen.cpython-313.pyc
+A	ai_modules/__pycache__/summarizer.cpython-313.pyc
+A	ai_modules/chatbot.py
+A	ai_modules/gemini_config.py
+A	ai_modules/quizgen.py
+A	ai_modules/summarizer.py
+A	app.py
+A	firebase_utils/__pycache__/firebase_config.cpython-313.pyc
+A	firebase_utils/firebase_config.py
+A	requirements.txt
+A	serviceAccountKey.json
+A	static/style.css
+A	templates/index.html
