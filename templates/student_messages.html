@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - GradMate AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                    GradMate AI
+                </span>
+            </div>
+            <button id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6 px-3">
+            <div class="space-y-2">
+                <a href="/student/dashboard" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/student/chatbot" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-robot mr-3"></i>
+                    AI Chatbot
+                </a>
+                <a href="/student/summarizer" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-file-text mr-3"></i>
+                    Note Summarizer
+                </a>
+                <a href="/student/quizgen" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    Quiz Generator
+                </a>
+                <a href="/student/studyplanner" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-calendar-alt mr-3"></i>
+                    Study Planner
+                </a>
+                <a href="/student/resume" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-user-tie mr-3"></i>
+                    Resume
+                </a>
+                <a href="/student/placements" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-briefcase mr-3"></i>
+                    Placement Dashboard
+                </a>
+                <a href="/student/messages" class="flex items-center px-3 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                    <i class="fas fa-comments mr-3"></i>
+                    Messages
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Navigation -->
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <button id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mr-3">
+                        <i class="fas fa-bars text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Messages</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                        <i class="fas fa-moon text-blue-300 hidden dark:inline"></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ user.name }}</span>
+                            <i class="fas fa-chevron-down text-gray-500 dark:text-gray-400 text-xs"></i>
+                        </button>
+                        
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
+                            <a href="/student/dashboard" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Chat Interface -->
+        <div class="flex h-screen">
+            <!-- Users Sidebar -->
+            <div class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+                <!-- Sidebar Header -->
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Conversations</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Chat with students and faculty</p>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="relative">
+                        <input type="text" id="user-search" 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                               placeholder="Search users...">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Users List -->
+                <div class="flex-1 overflow-y-auto">
+                    <div id="users-list" class="space-y-1">
+                        {% if users %}
+                            {% for user_item in users %}
+                            <div class="user-item p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors border-l-4 border-transparent" 
+                                 data-user-id="{{ user_item.id }}" 
+                                 data-user-name="{{ user_item.name }}"
+                                 data-user-type="{{ user_item.user_type }}">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                            {{ user_item.name }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            {{ user_item.user_type|replace('_', ' ')|title }}
+                                            {% if user_item.department %}
+                                                • {{ user_item.department }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col items-end space-y-1">
+                                        <span class="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="p-4 text-center">
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">No users found</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+                <!-- Chat Header -->
+                <div id="chat-header" class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 hidden">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white" id="chat-user-name">Select a user to start chatting</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400" id="chat-user-info">Choose from the list on the left</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Welcome Message -->
+                <div id="welcome-message" class="flex-1 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-comments text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Welcome to Messages</h3>
+                        <p class="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                            Select a user from the sidebar to start a conversation. 
+                            You can chat with fellow students, faculty members, and placement officers.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 hidden">
+                    <div id="messages-container" class="space-y-4">
+                        <!-- Messages will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div id="chat-input-container" class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 hidden">
+                    <form id="message-form" class="flex space-x-3">
+                        <div class="flex-1 relative">
+                            <input type="text" id="message-input" 
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                   placeholder="Type your message..." autocomplete="off">
+                        </div>
+                        <button type="submit" 
+                                class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
+
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        // Profile dropdown functionality
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenu = document.getElementById('profile-menu');
+
+        profileDropdown.addEventListener('click', () => {
+            profileMenu.classList.toggle('hidden');
+        });
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+        // Chat functionality
+        let currentChatUser = null;
+        let messages = [];
+        
+        const userSearch = document.getElementById('user-search');
+        const usersList = document.getElementById('users-list');
+        const chatHeader = document.getElementById('chat-header');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInputContainer = document.getElementById('chat-input-container');
+        const chatUserName = document.getElementById('chat-user-name');
+        const chatUserInfo = document.getElementById('chat-user-info');
+        const messagesContainer = document.getElementById('messages-container');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+
+        // Search functionality
+        userSearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const userItems = usersList.querySelectorAll('.user-item');
+            
+            userItems.forEach(item => {
+                const userName = item.getAttribute('data-user-name').toLowerCase();
+                const userType = item.getAttribute('data-user-type').toLowerCase();
+                const department = item.querySelector('.text-xs').textContent.toLowerCase();
+                
+                if (userName.includes(searchTerm) || userType.includes(searchTerm) || department.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // User selection
+        usersList.addEventListener('click', (e) => {
+            const userItem = e.target.closest('.user-item');
+            if (userItem) {
+                const userId = userItem.getAttribute('data-user-id');
+                const userName = userItem.getAttribute('data-user-name');
+                const userType = userItem.getAttribute('data-user-type');
+                
+                selectUser(userId, userName, userType);
+                
+                // Update active state
+                document.querySelectorAll('.user-item').forEach(item => {
+                    item.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+                });
+                userItem.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20');
+            }
+        });
+
+        // Select user and load chat
+        async function selectUser(userId, userName, userType) {
+            currentChatUser = { id: userId, name: userName, type: userType };
+            
+            // Update UI
+            chatUserName.textContent = userName;
+            chatUserInfo.textContent = `${userType.replace('_', ' ')}`;
+            
+            // Show chat interface
+            chatHeader.classList.remove('hidden');
+            welcomeMessage.classList.add('hidden');
+            chatMessages.classList.remove('hidden');
+            chatInputContainer.classList.remove('hidden');
+            
+            // Load messages
+            await loadMessages(userId);
+        }
+
+        // Load messages for a user
+        async function loadMessages(userId) {
+            try {
+                const response = await fetch(`/api/messages/${userId}`);
+                if (response.ok) {
+                    messages = await response.json();
+                    displayMessages();
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        // Display messages
+        function displayMessages() {
+            messagesContainer.innerHTML = '';
+            
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500 dark:text-gray-400">No messages yet. Start the conversation!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            messages.forEach(message => {
+                const isOwnMessage = message.sender_id === '{{ user.id }}';
+                const messageElement = createMessageElement(message, isOwnMessage);
+                messagesContainer.appendChild(messageElement);
+            });
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Create message element
+        function createMessageElement(message, isOwnMessage) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`;
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                isOwnMessage 
+                    ? 'bg-primary-600 text-white' 
+                    : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600'
+            }`;
+            
+            messageBubble.innerHTML = `
+                <p class="text-sm">${message.content}</p>
+                <p class="text-xs mt-1 opacity-70">${new Date(message.timestamp).toLocaleTimeString()}</p>
+            `;
+            
+            messageDiv.appendChild(messageBubble);
+            return messageDiv;
+        }
+
+        // Send message
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentChatUser || !messageInput.value.trim()) return;
+            
+            const messageContent = messageInput.value.trim();
+            messageInput.value = '';
+            
+            try {
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        receiver_id: currentChatUser.id,
+                        content: messageContent
+                    })
+                });
+                
+                if (response.ok) {
+                    const newMessage = await response.json();
+                    messages.push(newMessage);
+                    displayMessages();
+                } else {
+                    console.error('Error sending message');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        // Initialize sidebar state for mobile
+        if (window.innerWidth < 1024) {
+            sidebar.classList.add('-translate-x-full');
+        }
+
+        // Auto-refresh messages every 10 seconds
+        setInterval(() => {
+            if (currentChatUser) {
+                loadMessages(currentChatUser.id);
+            }
+        }, 10000);
+    </script>
+</body>
+</html> 

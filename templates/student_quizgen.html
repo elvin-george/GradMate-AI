@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Generator - GradMate AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                    GradMate AI
+                </span>
+            </div>
+            <button id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6 px-3">
+            <div class="space-y-2">
+                <a href="/student/dashboard" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/student/chatbot" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-robot mr-3"></i>
+                    AI Chatbot
+                </a>
+                <a href="/student/summarizer" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-file-text mr-3"></i>
+                    Note Summarizer
+                </a>
+                <a href="/student/quizgen" class="flex items-center px-3 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    Quiz Generator
+                </a>
+                <a href="/student/studyplanner" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-calendar-alt mr-3"></i>
+                    Study Planner
+                </a>
+                <a href="/student/resume" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-user-tie mr-3"></i>
+                    Resume
+                </a>
+                <a href="/student/placements" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-briefcase mr-3"></i>
+                    Placement Dashboard
+                </a>
+                <a href="/student/messages" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-comments mr-3"></i>
+                    Messages
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Navigation -->
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <button id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mr-3">
+                        <i class="fas fa-bars text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Quiz Generator</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                        <i class="fas fa-moon text-blue-300 hidden dark:inline"></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ user.name }}</span>
+                            <i class="fas fa-chevron-down text-gray-500 dark:text-gray-400 text-xs"></i>
+                        </button>
+                        
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
+                            <a href="/student/dashboard" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="p-6">
+            <!-- Header Section -->
+            <div class="mb-8 text-center">
+                <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-question-circle text-white text-3xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    AI-Powered Quiz Generator
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    Transform your study materials into interactive quizzes. Test your knowledge 
+                    and prepare for exams with AI-generated questions.
+                </p>
+            </div>
+
+            <!-- Input Section -->
+            <div class="max-w-4xl mx-auto mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="mb-4">
+                        <label for="content-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Enter your study content or topic
+                        </label>
+                        <div class="relative">
+                            <textarea id="content-input" rows="8" 
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+                                      placeholder="Paste your lecture notes, textbook content, or describe a topic you want to create a quiz for..."></textarea>
+                            
+                            <!-- Character Counter -->
+                            <div class="absolute bottom-3 right-3 text-xs text-gray-400 dark:text-gray-500">
+                                <span id="char-count">0</span> characters
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz Options -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label for="question-count" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Number of Questions
+                            </label>
+                            <select id="question-count" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="5">5 Questions</option>
+                                <option value="10" selected>10 Questions</option>
+                                <option value="15">15 Questions</option>
+                                <option value="20">20 Questions</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="difficulty" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Difficulty Level
+                            </label>
+                            <select id="difficulty" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="easy">Easy</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="question-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Question Type
+                            </label>
+                            <select id="question-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="multiple-choice" selected>Multiple Choice</option>
+                                <option value="true-false">True/False</option>
+                                <option value="fill-blank">Fill in the Blank</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button id="generate-quiz-btn" 
+                                class="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                            <i class="fas fa-magic mr-2"></i>
+                            <span id="generate-text">Generate Quiz</span>
+                        </button>
+                        
+                        <button id="clear-btn" 
+                                class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <i class="fas fa-eraser mr-2"></i>
+                            Clear
+                        </button>
+                        
+                        <button id="sample-btn" 
+                                class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <i class="fas fa-lightbulb mr-2"></i>
+                            Sample
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Output Section -->
+            <div id="quiz-output" class="max-w-4xl mx-auto hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            <i class="fas fa-question-circle text-purple-500 mr-2"></i>
+                            Generated Quiz
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button id="copy-quiz" 
+                                    class="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-copy mr-2"></i>Copy
+                            </button>
+                            <button id="download-quiz" 
+                                    class="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-download mr-2"></i>Download
+                            </button>
+                            <button id="start-quiz" 
+                                    class="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                                <i class="fas fa-play mr-2"></i>Start Quiz
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="quiz-content" class="space-y-6">
+                        <!-- Quiz questions will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Quiz Mode -->
+            <div id="interactive-quiz" class="max-w-4xl mx-auto hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            <i class="fas fa-gamepad text-green-500 mr-2"></i>
+                            Interactive Quiz Mode
+                        </h3>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                                Question <span id="current-question">1</span> of <span id="total-questions">5</span>
+                            </span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">
+                                Score: <span id="quiz-score">0</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div id="interactive-content" class="space-y-6">
+                        <!-- Interactive quiz content will be inserted here -->
+                    </div>
+                    
+                    <div class="flex justify-between mt-6">
+                        <button id="prev-question" class="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-chevron-left mr-2"></i>Previous
+                        </button>
+                        <button id="next-question" class="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
+                            Next<i class="fas fa-chevron-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="max-w-4xl mx-auto hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Generating Quiz...</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Our AI is analyzing your content and creating engaging questions</p>
+                </div>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="max-w-4xl mx-auto mt-8">
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800 p-6">
+                    <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-3">
+                        <i class="fas fa-lightbulb text-purple-600 dark:text-purple-400 mr-2"></i>
+                        Tips for Better Quizzes
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-800 dark:text-purple-200">
+                        <div>
+                            <p class="font-medium mb-1">📚 Comprehensive Content</p>
+                            <p>Include detailed information covering all aspects of the topic.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">🔍 Clear Concepts</p>
+                            <p>Ensure your content has well-defined concepts and examples.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">📝 Structured Information</p>
+                            <p>Organize content logically for better question generation.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">⚡ Practice Regularly</p>
+                            <p>Use generated quizzes to test and reinforce your knowledge.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
+
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        // Profile dropdown functionality
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenu = document.getElementById('profile-menu');
+
+        profileDropdown.addEventListener('click', () => {
+            profileMenu.classList.toggle('hidden');
+        });
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+        // Quiz generator functionality
+        const contentInput = document.getElementById('content-input');
+        const generateQuizBtn = document.getElementById('generate-quiz-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const sampleBtn = document.getElementById('sample-btn');
+        const quizOutput = document.getElementById('quiz-output');
+        const interactiveQuiz = document.getElementById('interactive-quiz');
+        const loadingState = document.getElementById('loading-state');
+        const quizContent = document.getElementById('quiz-content');
+        const charCount = document.getElementById('char-count');
+        const generateText = document.getElementById('generate-text');
+        const copyQuizBtn = document.getElementById('copy-quiz');
+        const downloadQuizBtn = document.getElementById('download-quiz');
+        const startQuizBtn = document.getElementById('start-quiz');
+        const questionCount = document.getElementById('question-count');
+        const difficulty = document.getElementById('difficulty');
+        const questionType = document.getElementById('question-type');
+
+        // Character counter
+        contentInput.addEventListener('input', () => {
+            const count = contentInput.value.length;
+            charCount.textContent = count.toLocaleString();
+        });
+
+        // Sample content
+        sampleBtn.addEventListener('click', () => {
+            const sampleContent = `Machine Learning is a subset of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed. It focuses on developing algorithms that can access data and use it to learn for themselves.
+
+The process of learning begins with observations or data, such as examples, direct experience, or instruction, in order to look for patterns in data and make better decisions in the future based on the examples that we provide.
+
+There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning involves training the model with labeled data, unsupervised learning finds hidden patterns in unlabeled data, and reinforcement learning learns through interaction with an environment.
+
+Machine learning algorithms are used in various applications including recommendation systems, image recognition, natural language processing, medical diagnosis, and financial forecasting.`;
+            
+            contentInput.value = sampleContent;
+            charCount.textContent = sampleContent.length.toLocaleString();
+        });
+
+        // Clear functionality
+        clearBtn.addEventListener('click', () => {
+            contentInput.value = '';
+            charCount.textContent = '0';
+            quizOutput.classList.add('hidden');
+            interactiveQuiz.classList.add('hidden');
+            loadingState.classList.add('hidden');
+        });
+
+        // Generate quiz functionality
+        generateQuizBtn.addEventListener('click', async () => {
+            const content = contentInput.value.trim();
+            if (!content) {
+                alert('Please enter some content to generate a quiz from.');
+                return;
+            }
+
+            // Show loading state
+            loadingState.classList.remove('hidden');
+            quizOutput.classList.add('hidden');
+            interactiveQuiz.classList.add('hidden');
+            generateQuizBtn.disabled = true;
+            generateText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+
+            try {
+                const response = await fetch('/api/quizgen', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        text: content,
+                        question_count: questionCount.value,
+                        difficulty: difficulty.value,
+                        question_type: questionType.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Display quiz
+                    displayQuiz(data.quiz);
+                    
+                    // Show output
+                    quizOutput.classList.remove('hidden');
+                } else {
+                    alert('Error generating quiz. Please try again.');
+                }
+            } catch (error) {
+                console.error('Quiz generation error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                // Hide loading state
+                loadingState.classList.add('hidden');
+                generateQuizBtn.disabled = false;
+                generateText.innerHTML = '<i class="fas fa-magic mr-2"></i>Generate Quiz';
+            }
+        });
+
+        // Display quiz function
+        function displayQuiz(quizText) {
+            // Parse the quiz text and format it nicely
+            const lines = quizText.split('\n').filter(line => line.trim());
+            let quizHTML = '';
+            let questionNumber = 1;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.match(/^\d+\./)) {
+                    // Question line
+                    const question = line.replace(/^\d+\.\s*/, '');
+                    quizHTML += `
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-900 dark:text-white mb-3">
+                                Question ${questionNumber}: ${question}
+                            </h4>
+                    `;
+                    questionNumber++;
+                } else if (line.match(/^[a-d]\)/i)) {
+                    // Option line
+                    quizHTML += `
+                        <div class="ml-4 mb-2">
+                            <span class="text-gray-700 dark:text-gray-300">${line}</span>
+                        </div>
+                    `;
+                } else if (line.toLowerCase().includes('answer:') || line.toLowerCase().includes('correct:')) {
+                    // Answer line
+                    quizHTML += `
+                        <div class="mt-3 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                            <span class="text-sm font-medium text-green-800 dark:text-green-200">
+                                <i class="fas fa-check-circle mr-1"></i>${line}
+                            </span>
+                        </div>
+                    `;
+                    quizHTML += '</div>'; // Close question div
+                } else if (line.trim()) {
+                    // Other content (explanations, etc.)
+                    quizHTML += `
+                        <div class="ml-4 mb-2 text-sm text-gray-600 dark:text-gray-400">
+                            ${line}
+                        </div>
+                    `;
+                }
+            }
+
+            quizContent.innerHTML = quizHTML;
+        }
+
+        // Copy quiz functionality
+        copyQuizBtn.addEventListener('click', () => {
+            const text = quizContent.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = copyQuizBtn.innerHTML;
+                copyQuizBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                setTimeout(() => {
+                    copyQuizBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+
+        // Download quiz functionality
+        downloadQuizBtn.addEventListener('click', () => {
+            const text = quizContent.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quiz.txt';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+
+        // Start interactive quiz functionality
+        startQuizBtn.addEventListener('click', () => {
+            // Hide regular quiz output and show interactive mode
+            quizOutput.classList.add('hidden');
+            interactiveQuiz.classList.remove('hidden');
+            
+            // Initialize interactive quiz (this would be expanded in a full implementation)
+            alert('Interactive quiz mode coming soon! This will allow you to take the quiz and get immediate feedback.');
+        });
+
+        // Initialize sidebar state for mobile
+        if (window.innerWidth < 1024) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - GradMate AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                    GradMate AI
+                </span>
+            </div>
+            <button id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6 px-3">
+            <div class="space-y-2">
+                <a href="/officer/dashboard" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/officer/drives" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-briefcase mr-3"></i>
+                    Manage Drives
+                </a>
+                <a href="/officer/training" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-graduation-cap mr-3"></i>
+                    Training Materials
+                </a>
+                <a href="/officer/filter" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-filter mr-3"></i>
+                    Student Filter
+                </a>
+                <a href="/officer/messages" class="flex items-center px-3 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                    <i class="fas fa-comments mr-3"></i>
+                    Messages
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Navigation -->
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <button id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mr-3">
+                        <i class="fas fa-bars text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Messages</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                        <i class="fas fa-moon text-blue-300 hidden dark:inline"></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ user.name }}</span>
+                            <i class="fas fa-chevron-down text-gray-500 dark:text-gray-400 text-xs"></i>
+                        </button>
+                        
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
+                            <a href="/officer/dashboard" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="p-6">
+            <!-- Header Section -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                            Communication Hub
+                        </h2>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Connect with students, placement officers, and manage all your communications in one place
+                        </p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="startNewConversation()" 
+                                class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <i class="fas fa-plus mr-2"></i>
+                            New Message
+                        </button>
+                        <button onclick="refreshMessages()" 
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="flex h-[600px]">
+                    <!-- Users Sidebar -->
+                    <div class="w-80 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                        <!-- Search Bar -->
+                        <div class="p-4 border-b border-gray-200 dark:border-gray-600">
+                            <div class="relative">
+                                <input type="text" id="user-search" placeholder="Search users..." 
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-600 text-gray-900 dark:text-white">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Users List -->
+                        <div class="overflow-y-auto h-[calc(600px-80px)]">
+                            {% for user_item in users %}
+                            {% if user_item.id != user.id %}
+                            <div class="user-item p-4 border-b border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors" 
+                                 onclick="selectUser('{{ user_item.id }}', '{{ user_item.name }}', '{{ user_item.user_type }}')">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-white text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ user_item.name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ user_item.user_type.replace('_', ' ') }}</p>
+                                        {% if user_item.department %}
+                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ user_item.department }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Area -->
+                    <div class="flex-1 flex flex-col">
+                        <!-- Chat Header -->
+                        <div id="chat-header" class="hidden p-4 border-b border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h3 id="chat-user-name" class="text-lg font-semibold text-gray-900 dark:text-white"></h3>
+                                    <p id="chat-user-info" class="text-sm text-gray-500 dark:text-gray-400"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Welcome Message -->
+                        <div id="welcome-message" class="flex-1 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-comments text-gray-400 text-3xl"></i>
+                                </div>
+                                <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">Welcome to Messages</h3>
+                                <p class="text-gray-500 dark:text-gray-400 mb-4">Select a user from the sidebar to start chatting</p>
+                                <button onclick="startNewConversation()" 
+                                        class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-plus mr-2"></i>Start New Conversation
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div id="chat-messages" class="hidden flex-1 overflow-y-auto p-4 space-y-4">
+                            <!-- Messages will be populated here -->
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div id="chat-input-container" class="hidden p-4 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800">
+                            <form id="message-form" class="flex space-x-3">
+                                <input type="text" id="message-input" placeholder="Type your message..." 
+                                       class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                <button type="submit" 
+                                        class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 dark:text-blue-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contacts</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ users|length - 1 }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-comment text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Chats</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Last Activity</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">Now</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <!-- New Conversation Modal -->
+    <div id="new-conversation-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Start New Conversation</h3>
+                <button onclick="closeNewConversationModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="conversation-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Conversation Type</label>
+                    <select id="conversation-type" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="student">Student</option>
+                        <option value="placement_officer">Placement Officer</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="conversation-user" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select User</label>
+                    <select id="conversation-user" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Choose a user...</option>
+                    </select>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button onclick="closeNewConversationModal()" 
+                            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                    <button onclick="startConversation()" 
+                            class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Start Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="success-message" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="success-text">Operation completed successfully!</span>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span id="error-text">An error occurred. Please try again.</span>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentChatUser = null;
+        let messages = [];
+        let messageRefreshInterval;
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
+
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        // Profile dropdown functionality
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenu = document.getElementById('profile-menu');
+
+        profileDropdown.addEventListener('click', () => {
+            profileMenu.classList.toggle('hidden');
+        });
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+        // User search functionality
+        const userSearch = document.getElementById('user-search');
+        userSearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const userItems = document.querySelectorAll('.user-item');
+            
+            userItems.forEach(item => {
+                const userName = item.querySelector('p').textContent.toLowerCase();
+                if (userName.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Select user and start chat
+        async function selectUser(userId, userName, userType) {
+            currentChatUser = { id: userId, name: userName, type: userType };
+            
+            // Update chat header
+            document.getElementById('chat-user-name').textContent = userName;
+            document.getElementById('chat-user-info').textContent = `${userType.replace('_', ' ')}`;
+            
+            // Show chat interface
+            document.getElementById('chat-header').classList.remove('hidden');
+            document.getElementById('welcome-message').classList.add('hidden');
+            document.getElementById('chat-messages').classList.remove('hidden');
+            document.getElementById('chat-input-container').classList.remove('hidden');
+            
+            // Load messages
+            await loadMessages(userId);
+            
+            // Start message refresh interval
+            startMessageRefresh();
+        }
+
+        // Load messages for a specific user
+        async function loadMessages(userId) {
+            try {
+                const response = await fetch(`/api/messages/${userId}`);
+                if (response.ok) {
+                    messages = await response.json();
+                    displayMessages();
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                showError('Failed to load messages');
+            }
+        }
+
+        // Display messages in the chat
+        function displayMessages() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = '';
+            
+            messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `flex ${message.sender_id === '{{ user.id }}' ? 'justify-end' : 'justify-start'}`;
+                
+                const messageBubble = document.createElement('div');
+                messageBubble.className = `max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.sender_id === '{{ user.id }}' 
+                        ? 'bg-primary-600 text-white' 
+                        : 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white'
+                }`;
+                
+                messageBubble.innerHTML = `
+                    <p class="text-sm">${message.content}</p>
+                    <p class="text-xs mt-1 opacity-75">${new Date(message.timestamp).toLocaleTimeString()}</p>
+                `;
+                
+                messageDiv.appendChild(messageBubble);
+                chatMessages.appendChild(messageDiv);
+            });
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Send message
+        const messageForm = document.getElementById('message-form');
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentChatUser) return;
+            
+            const messageInput = document.getElementById('message-input');
+            const content = messageInput.value.trim();
+            
+            if (!content) return;
+            
+            try {
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        recipient_id: currentChatUser.id,
+                        content: content
+                    })
+                });
+                
+                if (response.ok) {
+                    messageInput.value = '';
+                    await loadMessages(currentChatUser.id);
+                } else {
+                    showError('Failed to send message');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showError('Failed to send message');
+            }
+        });
+
+        // Start message refresh interval
+        function startMessageRefresh() {
+            if (messageRefreshInterval) {
+                clearInterval(messageRefreshInterval);
+            }
+            
+            messageRefreshInterval = setInterval(async () => {
+                if (currentChatUser) {
+                    await loadMessages(currentChatUser.id);
+                }
+            }, 5000); // Refresh every 5 seconds
+        }
+
+        // New conversation functionality
+        function startNewConversation() {
+            const modal = document.getElementById('new-conversation-modal');
+            const conversationType = document.getElementById('conversation-type');
+            const conversationUser = document.getElementById('conversation-user');
+            
+            // Populate user dropdown based on type
+            conversationType.addEventListener('change', () => {
+                const type = conversationType.value;
+                conversationUser.innerHTML = '<option value="">Choose a user...</option>';
+                
+                {% for user_item in users %}
+                {% if user_item.id != user.id %}
+                if ('{{ user_item.user_type }}' === type) {
+                    const option = document.createElement('option');
+                    option.value = '{{ user_item.id }}';
+                    option.textContent = '{{ user_item.name }} ({{ user_item.department or "N/A" }})';
+                    conversationUser.appendChild(option);
+                }
+                {% endif %}
+                {% endfor %}
+            });
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeNewConversationModal() {
+            document.getElementById('new-conversation-modal').classList.add('hidden');
+        }
+
+        function startConversation() {
+            const userId = document.getElementById('conversation-user').value;
+            if (!userId) return;
+            
+            const userOption = document.getElementById('conversation-user').selectedOptions[0];
+            const userName = userOption.textContent.split(' (')[0];
+            const userType = document.getElementById('conversation-type').value;
+            
+            closeNewConversationModal();
+            selectUser(userId, userName, userType);
+        }
+
+        // Refresh messages
+        function refreshMessages() {
+            if (currentChatUser) {
+                loadMessages(currentChatUser.id);
+            }
+            showSuccess('Messages refreshed');
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successMessage = document.getElementById('success-message');
+            const successText = document.getElementById('success-text');
+            successText.textContent = message;
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize sidebar state for mobile
+        if (window.innerWidth < 1024) {
+            sidebar.classList.add('-translate-x-full');
+        }
+
+        // Check for URL parameters (e.g., pre-selected student)
+        const urlParams = new URLSearchParams(window.location.search);
+        const studentId = urlParams.get('student');
+        if (studentId) {
+            // Find the student in the users list and select them
+            const studentItem = document.querySelector(`[onclick*="${studentId}"]`);
+            if (studentItem) {
+                const onclick = studentItem.getAttribute('onclick');
+                const match = onclick.match(/selectUser\('([^']+)', '([^']+)', '([^']+)'\)/);
+                if (match) {
+                    selectUser(match[1], match[2], match[3]);
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

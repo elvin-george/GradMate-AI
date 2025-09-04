@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Summarizer - GradMate AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                    GradMate AI
+                </span>
+            </div>
+            <button id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6 px-3">
+            <div class="space-y-2">
+                <a href="/student/dashboard" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/student/chatbot" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-robot mr-3"></i>
+                    AI Chatbot
+                </a>
+                <a href="/student/summarizer" class="flex items-center px-3 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                    <i class="fas fa-file-text mr-3"></i>
+                    Note Summarizer
+                </a>
+                <a href="/student/quizgen" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    Quiz Generator
+                </a>
+                <a href="/student/studyplanner" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-calendar-alt mr-3"></i>
+                    Study Planner
+                </a>
+                <a href="/student/resume" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-user-tie mr-3"></i>
+                    Resume
+                </a>
+                <a href="/student/placements" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-briefcase mr-3"></i>
+                    Placement Dashboard
+                </a>
+                <a href="/student/messages" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-comments mr-3"></i>
+                    Messages
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Navigation -->
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <button id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mr-3">
+                        <i class="fas fa-bars text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Note Summarizer</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                        <i class="fas fa-moon text-blue-300 hidden dark:inline"></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ user.name }}</span>
+                            <i class="fas fa-chevron-down text-gray-500 dark:text-gray-400 text-xs"></i>
+                        </button>
+                        
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
+                            <a href="/student/dashboard" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="p-6">
+            <!-- Header Section -->
+            <div class="mb-8 text-center">
+                <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-file-text text-white text-3xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    AI-Powered Note Summarizer
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    Transform your lengthy notes into concise, easy-to-understand summaries. 
+                    Perfect for exam preparation and quick revision.
+                </p>
+            </div>
+
+            <!-- Input Section -->
+            <div class="max-w-4xl mx-auto mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="mb-4">
+                        <label for="notes-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Paste your notes here
+                        </label>
+                        <div class="relative">
+                            <textarea id="notes-input" rows="12" 
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+                                      placeholder="Paste your lecture notes, textbook content, or any study material here. The AI will create a clear, organized summary for you..."></textarea>
+                            
+                            <!-- Character Counter -->
+                            <div class="absolute bottom-3 right-3 text-xs text-gray-400 dark:text-gray-500">
+                                <span id="char-count">0</span> characters
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button id="summarize-btn" 
+                                class="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                            <i class="fas fa-magic mr-2"></i>
+                            <span id="summarize-text">Generate Summary</span>
+                        </button>
+                        
+                        <button id="clear-btn" 
+                                class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <i class="fas fa-eraser mr-2"></i>
+                            Clear
+                        </button>
+                        
+                        <button id="sample-btn" 
+                                class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            <i class="fas fa-lightbulb mr-2"></i>
+                            Sample
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Output Section -->
+            <div id="summary-output" class="max-w-4xl mx-auto hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            AI Generated Summary
+                        </h3>
+                        <div class="flex space-x-2">
+                            <button id="copy-summary" 
+                                    class="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-copy mr-2"></i>Copy
+                            </button>
+                            <button id="download-summary" 
+                                    class="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-download mr-2"></i>Download
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="summary-content" class="prose prose-sm max-w-none dark:prose-invert">
+                        <!-- Summary content will be inserted here -->
+                    </div>
+                    
+                    <!-- Summary Stats -->
+                    <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Original Length</p>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white" id="original-length">0 words</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Summary Length</p>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white" id="summary-length">0 words</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Compression Ratio</p>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white" id="compression-ratio">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="max-w-4xl mx-auto hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Generating Summary...</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Our AI is analyzing your notes and creating a concise summary</p>
+                </div>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="max-w-4xl mx-auto mt-8">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-6">
+                    <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                        <i class="fas fa-lightbulb text-blue-600 dark:text-blue-400 mr-2"></i>
+                        Pro Tips for Better Summaries
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800 dark:text-blue-200">
+                        <div>
+                            <p class="font-medium mb-1">📝 Include Key Concepts</p>
+                            <p>Make sure your notes contain the main topics and important definitions.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">🔍 Be Specific</p>
+                            <p>Include examples and specific details for better context.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">📚 Organize by Topics</p>
+                            <p>Group related information together for clearer summaries.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">⚡ Keep it Concise</p>
+                            <p>Focus on the most important information for effective revision.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
+
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        // Profile dropdown functionality
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenu = document.getElementById('profile-menu');
+
+        profileDropdown.addEventListener('click', () => {
+            profileMenu.classList.toggle('hidden');
+        });
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+        // Summarizer functionality
+        const notesInput = document.getElementById('notes-input');
+        const summarizeBtn = document.getElementById('summarize-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const sampleBtn = document.getElementById('sample-btn');
+        const summaryOutput = document.getElementById('summary-output');
+        const loadingState = document.getElementById('loading-state');
+        const summaryContent = document.getElementById('summary-content');
+        const charCount = document.getElementById('char-count');
+        const summarizeText = document.getElementById('summarize-text');
+        const copySummaryBtn = document.getElementById('copy-summary');
+        const downloadSummaryBtn = document.getElementById('download-summary');
+        const originalLength = document.getElementById('original-length');
+        const summaryLength = document.getElementById('summary-length');
+        const compressionRatio = document.getElementById('compression-ratio');
+
+        // Character counter
+        notesInput.addEventListener('input', () => {
+            const count = notesInput.value.length;
+            charCount.textContent = count.toLocaleString();
+        });
+
+        // Sample text
+        sampleBtn.addEventListener('click', () => {
+            const sampleText = `Machine Learning is a subset of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed. It focuses on developing algorithms that can access data and use it to learn for themselves.
+
+The process of learning begins with observations or data, such as examples, direct experience, or instruction, in order to look for patterns in data and make better decisions in the future based on the examples that we provide. The primary aim is to allow the computers learn automatically without human intervention or assistance and adjust actions accordingly.
+
+There are three main types of machine learning: supervised learning, unsupervised learning, and reinforcement learning. Supervised learning involves training the model with labeled data, unsupervised learning finds hidden patterns in unlabeled data, and reinforcement learning learns through interaction with an environment.
+
+Machine learning algorithms are used in various applications including recommendation systems, image recognition, natural language processing, medical diagnosis, and financial forecasting. The field continues to evolve rapidly with new techniques and applications being developed regularly.`;
+            
+            notesInput.value = sampleText;
+            charCount.textContent = sampleText.length.toLocaleString();
+        });
+
+        // Clear functionality
+        clearBtn.addEventListener('click', () => {
+            notesInput.value = '';
+            charCount.textContent = '0';
+            summaryOutput.classList.add('hidden');
+            loadingState.classList.add('hidden');
+        });
+
+        // Summarize functionality
+        summarizeBtn.addEventListener('click', async () => {
+            const text = notesInput.value.trim();
+            if (!text) {
+                alert('Please enter some text to summarize.');
+                return;
+            }
+
+            // Show loading state
+            loadingState.classList.remove('hidden');
+            summaryOutput.classList.add('hidden');
+            summarizeBtn.disabled = true;
+            summarizeText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+            try {
+                const response = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Display summary
+                    summaryContent.innerHTML = data.summary.replace(/\n/g, '<br>');
+                    
+                    // Calculate stats
+                    const originalWords = text.split(/\s+/).length;
+                    const summaryWords = data.summary.split(/\s+/).length;
+                    const compression = ((originalWords - summaryWords) / originalWords * 100).toFixed(1);
+                    
+                    originalLength.textContent = `${originalWords} words`;
+                    summaryLength.textContent = `${summaryWords} words`;
+                    compressionRatio.textContent = `${compression}%`;
+                    
+                    // Show output
+                    summaryOutput.classList.remove('hidden');
+                } else {
+                    alert('Error generating summary. Please try again.');
+                }
+            } catch (error) {
+                console.error('Summarization error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                // Hide loading state
+                loadingState.classList.add('hidden');
+                summarizeBtn.disabled = false;
+                summarizeText.innerHTML = '<i class="fas fa-magic mr-2"></i>Generate Summary';
+            }
+        });
+
+        // Copy summary functionality
+        copySummaryBtn.addEventListener('click', () => {
+            const text = summaryContent.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = copySummaryBtn.innerHTML;
+                copySummaryBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                setTimeout(() => {
+                    copySummaryBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+
+        // Download summary functionality
+        downloadSummaryBtn.addEventListener('click', () => {
+            const text = summaryContent.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'summary.txt';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+
+        // Initialize sidebar state for mobile
+        if (window.innerWidth < 1024) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    </script>
+</body>
+</html> 

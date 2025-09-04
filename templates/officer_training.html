@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Materials - GradMate AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                    GradMate AI
+                </span>
+            </div>
+            <button id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6 px-3">
+            <div class="space-y-2">
+                <a href="/officer/dashboard" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/officer/drives" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-briefcase mr-3"></i>
+                    Manage Drives
+                </a>
+                <a href="/officer/training" class="flex items-center px-3 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                    <i class="fas fa-graduation-cap mr-3"></i>
+                    Training Materials
+                </a>
+                <a href="/officer/filter" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-filter mr-3"></i>
+                    Student Filter
+                </a>
+                <a href="/officer/messages" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-comments mr-3"></i>
+                    Messages
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Navigation -->
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <button id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mr-3">
+                        <i class="fas fa-bars text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Training Materials</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                        <i class="fas fa-moon text-blue-300 hidden dark:inline"></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ user.name }}</span>
+                            <i class="fas fa-chevron-down text-gray-500 dark:text-gray-400 text-xs"></i>
+                        </button>
+                        
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
+                            <a href="/officer/dashboard" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="p-6">
+            <!-- Header Section -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                            Training & Development Resources
+                        </h2>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Upload and manage training materials, career guidance resources, and skill development content
+                        </p>
+                    </div>
+                    <button id="add-material-btn" 
+                            class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Material
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-alt text-blue-600 dark:text-blue-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Materials</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ materials|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-eye text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Views</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-download text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Downloads</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Materials Grid -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Training Materials</h3>
+                </div>
+                
+                <div class="p-6">
+                    {% if materials %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {% for material in materials %}
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-link text-blue-600 dark:text-blue-400"></i>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded-full">
+                                        {{ material.type|title }}
+                                    </span>
+                                </div>
+                                
+                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">{{ material.title }}</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{{ material.description }}</p>
+                                
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        {{ material.created_at.strftime('%b %d, %Y') if material.created_at else 'Recently' }}
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ material.link }}" target="_blank" 
+                                       class="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors">
+                                        <i class="fas fa-external-link-alt mr-1"></i>
+                                        Access
+                                    </a>
+                                    <button onclick="editMaterial('{{ material.id }}')" 
+                                            class="p-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteMaterial('{{ material.id }}')" 
+                                            class="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-graduation-cap text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No training materials yet</h3>
+                            <p class="text-gray-500 dark:text-gray-400 mb-4">Start by adding your first training resource</p>
+                            <button onclick="showAddMaterialModal()" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                <i class="fas fa-plus mr-2"></i>Add First Material
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="max-w-4xl mx-auto mt-8">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800 p-6">
+                    <h3 class="text-lg font-semibold text-green-900 dark:text-green-100 mb-3">
+                        <i class="fas fa-lightbulb text-green-600 dark:text-green-400 mr-2"></i>
+                        Training Material Best Practices
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800 dark:text-green-200">
+                        <div>
+                            <p class="font-medium mb-1">📚 Relevant Content</p>
+                            <p>Ensure materials are directly relevant to current industry trends and student needs.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">🔗 Quality Links</p>
+                            <p>Provide reliable, high-quality resources from reputable sources and platforms.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">📝 Clear Descriptions</p>
+                            <p>Write clear, descriptive summaries to help students understand the content.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">📊 Regular Updates</p>
+                            <p>Keep materials current and remove outdated resources regularly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <!-- Add/Edit Material Modal -->
+    <div id="material-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">Add Training Material</h3>
+                <button onclick="closeMaterialModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="material-form" class="space-y-6">
+                <input type="hidden" id="material-id">
+                
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title *</label>
+                    <input type="text" id="title" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="Enter material title">
+                </div>
+                
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description *</label>
+                    <textarea id="description" rows="3" required
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                              placeholder="Describe the training material content"></textarea>
+                </div>
+                
+                <div>
+                    <label for="link" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Resource Link *</label>
+                    <input type="url" id="link" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                           placeholder="https://example.com/resource">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Provide a direct link to the training resource</p>
+                </div>
+                
+                <div>
+                    <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type *</label>
+                    <select id="type" required
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Select Type</option>
+                        <option value="video">Video Tutorial</option>
+                        <option value="document">Document/PDF</option>
+                        <option value="course">Online Course</option>
+                        <option value="article">Article/Blog</option>
+                        <option value="tool">Tool/Software</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="closeMaterialModal()" 
+                            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        <span id="submit-text">Add Material</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="success-message" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="success-text">Operation completed successfully!</span>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span id="error-text">An error occurred. Please try again.</span>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
+
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        // Profile dropdown functionality
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenu = document.getElementById('profile-menu');
+
+        profileDropdown.addEventListener('click', () => {
+            profileMenu.classList.toggle('hidden');
+        });
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+        // Training material management functionality
+        const addMaterialBtn = document.getElementById('add-material-btn');
+        const materialModal = document.getElementById('material-modal');
+        const materialForm = document.getElementById('material-form');
+        const modalTitle = document.getElementById('modal-title');
+        const submitText = document.getElementById('submit-text');
+        const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
+        const successText = document.getElementById('success-text');
+        const errorText = document.getElementById('error-text');
+
+        // Show add material modal
+        addMaterialBtn.addEventListener('click', () => {
+            showAddMaterialModal();
+        });
+
+        function showAddMaterialModal() {
+            modalTitle.textContent = 'Add Training Material';
+            submitText.textContent = 'Add Material';
+            materialForm.reset();
+            document.getElementById('material-id').value = '';
+            materialModal.classList.remove('hidden');
+        }
+
+        function closeMaterialModal() {
+            materialModal.classList.add('hidden');
+        }
+
+        // Form submission
+        materialForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const materialId = document.getElementById('material-id').value;
+            const isEdit = materialId !== '';
+            
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                link: document.getElementById('link').value,
+                type: document.getElementById('type').value
+            };
+            
+            try {
+                const url = isEdit ? `/api/training/${materialId}` : '/api/training';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    showSuccess(isEdit ? 'Material updated successfully!' : 'Material added successfully!');
+                    closeMaterialModal();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    const data = await response.json();
+                    showError(data.message || 'Operation failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred. Please try again.');
+            }
+        });
+
+        // Edit material
+        function editMaterial(materialId) {
+            // This would populate the form with existing material data
+            // For now, we'll just show the modal
+            modalTitle.textContent = 'Edit Training Material';
+            submitText.textContent = 'Update Material';
+            document.getElementById('material-id').value = materialId;
+            materialModal.classList.remove('hidden');
+        }
+
+        // Delete material
+        async function deleteMaterial(materialId) {
+            if (!confirm('Are you sure you want to delete this training material? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/training/${materialId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showSuccess('Training material deleted successfully!');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showError('Failed to delete training material.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred. Please try again.');
+            }
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            successText.textContent = message;
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize sidebar state for mobile
+        if (window.innerWidth < 1024) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    </script>
+</body>
+</html> 
