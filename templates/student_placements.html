@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Dashboard - GradMate AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        secondary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
+        <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                    GradMate AI
+                </span>
+            </div>
+            <button id="close-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                <i class="fas fa-times text-gray-500 dark:text-gray-400"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-6 px-3">
+            <div class="space-y-2">
+                <a href="/student/dashboard" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/student/chatbot" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-robot mr-3"></i>
+                    AI Chatbot
+                </a>
+                <a href="/student/summarizer" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-file-text mr-3"></i>
+                    Note Summarizer
+                </a>
+                <a href="/student/quizgen" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    Quiz Generator
+                </a>
+                <a href="/student/studyplanner" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-calendar-alt mr-3"></i>
+                    Study Planner
+                </a>
+                <a href="/student/resume" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-user-tie mr-3"></i>
+                    Resume
+                </a>
+                <a href="/student/placements" class="flex items-center px-3 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                    <i class="fas fa-briefcase mr-3"></i>
+                    Placement Dashboard
+                </a>
+                <a href="/student/messages" class="flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <i class="fas fa-comments mr-3"></i>
+                    Messages
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Navigation -->
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center">
+                    <button id="open-sidebar" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mr-3">
+                        <i class="fas fa-bars text-gray-500 dark:text-gray-400"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Placement Dashboard</h1>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                        <i class="fas fa-moon text-blue-300 hidden dark:inline"></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">{{ user.name }}</span>
+                            <i class="fas fa-chevron-down text-gray-500 dark:text-gray-400 text-xs"></i>
+                        </button>
+                        
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2">
+                            <a href="/student/dashboard" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="p-6">
+            <!-- Header Section -->
+            <div class="mb-8 text-center">
+                <div class="w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-briefcase text-white text-3xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    Placement Opportunities
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    Discover exciting career opportunities, apply to placement drives, and access 
+                    training materials to enhance your professional skills.
+                </p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-building text-blue-600 dark:text-blue-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Drives</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ drives|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Training Materials</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ training_materials|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-tie text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Your Department</p>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ user.department }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Placement Drives Section -->
+            <div class="max-w-6xl mx-auto mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            <i class="fas fa-building text-primary-500 mr-2"></i>
+                            Active Placement Drives
+                        </h3>
+                        
+                        <!-- Filter Options -->
+                        <div class="flex items-center space-x-3">
+                            <select id="department-filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <option value="">All Departments</option>
+                                <option value="{{ user.department }}">{{ user.department }}</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Mechanical">Mechanical</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Civil">Civil</option>
+                                <option value="Chemical">Chemical</option>
+                                <option value="Biotechnology">Biotechnology</option>
+                            </select>
+                            
+                            <select id="cgpa-filter" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <option value="">All CGPA</option>
+                                <option value="7.0">7.0+ CGPA</option>
+                                <option value="7.5">7.5+ CGPA</option>
+                                <option value="8.0">8.0+ CGPA</option>
+                                <option value="8.5">8.5+ CGPA</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Drives Grid -->
+                    <div id="drives-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% if drives %}
+                            {% for drive in drives %}
+                            <div class="drive-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-shadow" data-department="{{ drive.departments|join(', ') }}" data-min-cgpa="{{ drive.min_cgpa }}">
+                                <div class="flex items-start justify-between mb-3">
+                                    <h4 class="font-semibold text-gray-900 dark:text-white text-lg">{{ drive.company_name }}</h4>
+                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-full">
+                                        Active
+                                    </span>
+                                </div>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-gray-700 dark:text-gray-300 font-medium">{{ drive.position }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">{{ drive.description }}</p>
+                                    
+                                    <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Deadline: {{ drive.deadline.strftime('%b %d, %Y') if drive.deadline else 'No deadline' }}</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-star"></i>
+                                        <span>Min CGPA: {{ drive.min_cgpa }}</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <span>Departments: {{ drive.departments|join(', ') if drive.departments else 'All' }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Requirements -->
+                                {% if drive.requirements %}
+                                <div class="mb-4">
+                                    <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Requirements:</h5>
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for requirement in drive.requirements %}
+                                        <span class="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded-full">
+                                            {{ requirement }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Eligibility Check -->
+                                <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    {% set eligible = (not drive.departments or user.department in drive.departments) and user.cgpa >= drive.min_cgpa %}
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Eligibility:</span>
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full {% if eligible %}bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200{% else %}bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200{% endif %}">
+                                            {% if eligible %}
+                                                <i class="fas fa-check mr-1"></i>Eligible
+                                            {% else %}
+                                                <i class="fas fa-times mr-1"></i>Not Eligible
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    
+                                    {% if not eligible %}
+                                    <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                        {% if user.department not in (drive.departments or []) %}
+                                            • Department: {{ user.department }} not in required departments
+                                        {% endif %}
+                                        {% if user.cgpa < drive.min_cgpa %}
+                                            • CGPA: {{ "%.2f"|format(user.cgpa) }} < {{ drive.min_cgpa }}
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Action Button -->
+                                <button class="w-full py-2 px-4 rounded-lg font-medium transition-colors {% if eligible %}bg-primary-600 hover:bg-primary-700 text-white{% else %}bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed{% endif %}"
+                                        {% if eligible %}onclick="applyToDrive('{{ drive.id }}')"{% endif %}
+                                        {% if not eligible %}disabled{% endif %}>
+                                    {% if eligible %}
+                                        <i class="fas fa-paper-plane mr-2"></i>Apply Now
+                                    {% else %}
+                                        <i class="fas fa-lock mr-2"></i>Not Eligible
+                                    {% endif %}
+                                </button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-span-full text-center py-12">
+                                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-building text-gray-400 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No active placement drives</h3>
+                                <p class="text-gray-500 dark:text-gray-400">Check back later for new opportunities</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Materials Section -->
+            <div class="max-w-6xl mx-auto mb-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                        <i class="fas fa-graduation-cap text-primary-500 mr-2"></i>
+                        Training & Development Resources
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% if training_materials %}
+                            {% for material in training_materials %}
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-link text-blue-600 dark:text-blue-400"></i>
+                                    </div>
+                                    <span class="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded-full">
+                                        {{ material.type|title }}
+                                    </span>
+                                </div>
+                                
+                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">{{ material.title }}</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{{ material.description }}</p>
+                                
+                                <a href="{{ material.link }}" target="_blank" 
+                                   class="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium text-sm">
+                                    Access Resource
+                                    <i class="fas fa-external-link-alt ml-1"></i>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-span-full text-center py-12">
+                                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-graduation-cap text-gray-400 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No training materials available</h3>
+                                <p class="text-gray-500 dark:text-gray-400">Check back later for new resources</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Career Tips Section -->
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800 p-6">
+                    <h3 class="text-lg font-semibold text-indigo-900 dark:text-indigo-100 mb-3">
+                        <i class="fas fa-lightbulb text-indigo-600 dark:text-indigo-400 mr-2"></i>
+                        Career Success Tips
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-indigo-800 dark:text-indigo-200">
+                        <div>
+                            <p class="font-medium mb-1">📚 Continuous Learning</p>
+                            <p>Stay updated with the latest technologies and industry trends.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">🌐 Networking</p>
+                            <p>Build professional relationships and attend industry events.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">💼 Internships</p>
+                            <p>Gain practical experience through internships and projects.</p>
+                        </div>
+                        <div>
+                            <p class="font-medium mb-1">📝 Strong Resume</p>
+                            <p>Keep your resume updated and tailored for each application.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <!-- Success Message -->
+    <div id="success-message" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="success-text">Application submitted successfully!</span>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span id="error-text">An error occurred. Please try again.</span>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light mode
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+        });
+
+        // Sidebar functionality
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        // Profile dropdown functionality
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const profileMenu = document.getElementById('profile-menu');
+
+        profileDropdown.addEventListener('click', () => {
+            profileMenu.classList.toggle('hidden');
+        });
+
+        // Close profile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
+        });
+
+        // Filter functionality
+        const departmentFilter = document.getElementById('department-filter');
+        const cgpaFilter = document.getElementById('cgpa-filter');
+        const drivesGrid = document.getElementById('drives-grid');
+
+        function filterDrives() {
+            const selectedDept = departmentFilter.value;
+            const selectedCgpa = parseFloat(cgpaFilter.value) || 0;
+            
+            const driveCards = drivesGrid.querySelectorAll('.drive-card');
+            
+            driveCards.forEach(card => {
+                const department = card.getAttribute('data-department');
+                const minCgpa = parseFloat(card.getAttribute('data-min-cgpa')) || 0;
+                
+                let showCard = true;
+                
+                if (selectedDept && !department.includes(selectedDept)) {
+                    showCard = false;
+                }
+                
+                if (selectedCgpa && minCgpa < selectedCgpa) {
+                    showCard = false;
+                }
+                
+                card.style.display = showCard ? 'block' : 'none';
+            });
+        }
+
+        departmentFilter.addEventListener('change', filterDrives);
+        cgpaFilter.addEventListener('change', filterDrives);
+
+        // Apply to drive functionality
+        async function applyToDrive(driveId) {
+            try {
+                const response = await fetch(`/api/drives/${driveId}/apply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Application submitted successfully!');
+                    // Disable the apply button for this drive
+                    const applyBtn = document.querySelector(`[onclick="applyToDrive('${driveId}')"]`);
+                    if (applyBtn) {
+                        applyBtn.disabled = true;
+                        applyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Applied';
+                        applyBtn.className = 'w-full py-2 px-4 rounded-lg font-medium bg-green-600 text-white cursor-not-allowed';
+                    }
+                } else {
+                    showError(data.error || 'Error submitting application. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred. Please try again.');
+            }
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successMessage = document.getElementById('success-message');
+            const successText = document.getElementById('success-text');
+            successText.textContent = message;
+            successMessage.classList.remove('hidden');
+            setTimeout(() => {
+                successMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize sidebar state for mobile
+        if (window.innerWidth < 1024) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    </script>
+</body>
+</html> 
