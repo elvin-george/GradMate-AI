@@ -226,7 +226,7 @@
                                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                             <div>
                                                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Deadline</p>
-                                                <p class="text-gray-600 dark:text-gray-400">{{ drive.deadline.strftime('%b %d, %Y') if drive.deadline else 'No deadline' }}</p>
+                                                <p class="text-gray-600 dark:text-gray-400">{{ drive.deadline or 'No deadline' }}</p>
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Min CGPA</p>
@@ -234,7 +234,7 @@
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Date</p>
-                                                <p class="text-gray-600 dark:text-gray-400">{{ drive.date.strftime('%b %d, %Y') if drive.date else 'TBD' }}</p>
+                                                <p class="text-gray-600 dark:text-gray-400">{{ drive.date or 'TBD' }}</p>
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Departments</p>

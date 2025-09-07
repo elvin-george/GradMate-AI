@@ -430,7 +430,7 @@
             }`;
             
             messageBubble.innerHTML = `
-                <p class="text-sm">${message.content}</p>
+                <p class="text-sm">${message.message || message.content || 'Message content unavailable'}</p>
                 <p class="text-xs mt-1 opacity-70">${new Date(message.timestamp).toLocaleTimeString()}</p>
             `;
             
@@ -455,7 +455,7 @@
                     },
                     body: JSON.stringify({
                         receiver_id: currentChatUser.id,
-                        content: messageContent
+                        message: messageContent
                     })
                 });
                 

@@ -5,6 +5,8 @@ from firebase_admin import credentials, firestore, auth
 import uuid
 from datetime import datetime, timedelta
 import json
+import os
+import requests
 
 # AI modules
 from ai_modules.chatbot import ask_chatbot
@@ -33,7 +35,9 @@ def get_current_user():
     if is_logged_in():
         user_doc = db.collection('users').document(session['user_id']).get()
         if user_doc.exists:
-            return {**user_doc.to_dict(), 'id': user_doc.id}
+            user_data = user_doc.to_dict()
+            user_data['id'] = user_doc.id  # Keep 'id' for backward compatibility
+            return user_data
     return None
 
 # Helper function to require login
@@ -76,20 +80,46 @@ def login():
         password = data.get('password')
         user_type = data.get('user_type')
         
-        # Simple authentication (in production, use proper password hashing)
-        user_ref = db.collection('users').where('email', '==', email).where('user_type', '==', user_type).limit(1).stream()
-        user = None
-        for doc in user_ref:
-            user = {**doc.to_dict(), 'id': doc.id}
-            break
-        
-        if user and user.get('password') == password:  # In production, use proper password verification
-            session['user_id'] = user['id']
-            session['user_type'] = user['user_type']
-            session['user_name'] = user['name']
+        try:
+            # Authenticate with Firebase Auth REST to verify password
+            # Requires FIREBASE_WEB_API_KEY env var set from Firebase Console
+            api_key = os.getenv('FIREBASE_WEB_API_KEY')
+            if not api_key:
+                raise Exception('Missing FIREBASE_WEB_API_KEY environment variable')
+
+            sign_in_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}"
+            resp = requests.post(sign_in_url, json={
+                'email': email,
+                'password': password,
+                'returnSecureToken': True
+            }, timeout=10)
+            if resp.status_code != 200:
+                return jsonify({'success': False, 'message': 'Invalid email or password'})
+
+            payload = resp.json()
+            user_record = auth.get_user(payload.get('localId'))
+            
+            # Verify user type matches
+            user_doc = db.collection('users').document(user_record.uid).get()
+            if not user_doc.exists:
+                return jsonify({'success': False, 'message': 'User profile not found'})
+            
+            user_data = user_doc.to_dict()
+            if user_data.get('user_type') != user_type:
+                return jsonify({'success': False, 'message': 'Invalid user type for this account'})
+            
+            # Set session data
+            session['user_id'] = user_record.uid
+            session['user_type'] = user_data['user_type']
+            session['user_name'] = user_data['name']
+            
             return jsonify({'success': True, 'redirect': url_for('dashboard')})
-        else:
-            return jsonify({'success': False, 'message': 'Invalid credentials'})
+            
+        except auth.UserNotFoundError:
+            return jsonify({'success': False, 'message': 'User not found'})
+        except Exception as e:
+            print(f"Login error: {e}")
+            return jsonify({'success': False, 'message': 'Authentication failed'})
     
     return render_template('login.html')
 
@@ -103,34 +133,42 @@ def signup():
         if user_type != 'student':
             return jsonify({'success': False, 'message': 'Only students can sign up. Placement officers are pre-created.'})
         
-        user_data = {
-            'name': data.get('name'),
-            'email': data.get('email'),
-            'phone': data.get('phone'),
-            'department': data.get('department'),
-            'cgpa': float(data.get('cgpa', 0)),
-            'skills': data.get('skills', []),
-            'password': data.get('password'),
-            'user_type': 'student',
-            'resume_url': '',
-            'created_at': datetime.now()
-        }
-        
-        # Check if email already exists
-        existing_user = db.collection('users').where('email', '==', user_data['email']).limit(1).stream()
-        if list(existing_user):
+        try:
+            # Create user in Firebase Auth
+            user_record = auth.create_user(
+                email=data.get('email'),
+                password=data.get('password'),
+                display_name=data.get('name')
+            )
+            
+            # Create user profile in Firestore (without password)
+            user_data = {
+                'uid': user_record.uid,
+                'name': data.get('name'),
+                'email': data.get('email'),
+                'user_type': 'student',
+                'department': data.get('department'),
+                'cgpa': float(data.get('cgpa', 0)),
+                'skills': data.get('skills', []),
+                'resume_url': '',
+                'created_at': datetime.now()
+            }
+            
+            # Add user to Firestore using UID as document ID
+            db.collection('users').document(user_record.uid).set(user_data)
+            
+            # Auto-login after signup
+            session['user_id'] = user_record.uid
+            session['user_type'] = user_data['user_type']
+            session['user_name'] = user_data['name']
+            
+            return jsonify({'success': True, 'redirect': url_for('dashboard')})
+            
+        except auth.EmailAlreadyExistsError:
             return jsonify({'success': False, 'message': 'Email already registered'})
-        
-        # Add user to database
-        doc_ref = db.collection('users').add(user_data)
-        user_data['id'] = doc_ref[1].id
-        
-        # Auto-login after signup
-        session['user_id'] = user_data['id']
-        session['user_type'] = user_data['user_type']
-        session['user_name'] = user_data['name']
-        
-        return jsonify({'success': True, 'redirect': url_for('dashboard')})
+        except Exception as e:
+            print(f"Signup error: {e}")
+            return jsonify({'success': False, 'message': 'Account creation failed'})
     
     return render_template('signup.html')
 
@@ -198,7 +236,15 @@ def student_dashboard():
                         last_date = datetime.now()
                 
                 if last_date > datetime.now():
-                    upcoming_drives.append({**drive_data, 'id': doc.id})
+                    # Add template-friendly aliases while keeping schema
+                    alias = {**drive_data, 'id': doc.id}
+                    alias['position'] = drive_data.get('job_role')
+                    alias['deadline'] = drive_data.get('last_date_to_apply')
+                    elig = drive_data.get('eligibility_criteria') or {}
+                    alias['min_cgpa'] = (elig.get('cgpa') if isinstance(elig, dict) else None)
+                    alias['departments'] = (elig.get('departments') if isinstance(elig, dict) else [])
+                    alias['requirements'] = drive_data.get('skills_required', [])
+                    upcoming_drives.append(alias)
         
         upcoming_drives = upcoming_drives[:3]
         
@@ -287,9 +333,27 @@ def student_quizgen():
 def student_studyplanner():
     user = get_current_user()
     
-    # Get all tasks for the user
-    tasks_ref = db.collection('tasks').where('user_id', '==', user['id']).order_by('due_date').stream()
-    tasks = [{**doc.to_dict(), 'id': doc.id} for doc in tasks_ref]
+    # Get all tasks for the user (removed order_by to avoid index requirement)
+    # Note: If ordering by due_date is required, create composite index: user_id (Ascending), due_date (Ascending)
+    tasks_ref = db.collection('study_plans').where('user_id', '==', user['id']).stream()
+    tasks = []
+    for plan_doc in tasks_ref:
+        plan_data = plan_doc.to_dict()
+        if 'tasks' in plan_data:
+            for task in plan_data['tasks']:
+                tasks.append({
+                    'id': f"{plan_doc.id}_{task.get('task', '')}",
+                    'title': task.get('task', ''),
+                    'due_date': task.get('due_date'),
+                    'status': task.get('status', 'pending'),
+                    'plan_id': plan_doc.id,
+                    'priority': 'medium',
+                    'description': '',
+                    'completed': task.get('status', 'pending') in ['done', 'completed']
+                })
+    
+    # Sort in Python to avoid Firestore index requirement
+    tasks.sort(key=lambda x: x.get('due_date', ''))
     
     return render_template('student_studyplanner.html', user=user, tasks=tasks)
 
@@ -306,13 +370,50 @@ def student_resume():
 def student_placements():
     user = get_current_user()
     
-    # Get all active placement drives
-    drives_ref = db.collection('placement_drives').where('active', '==', True).order_by('date').stream()
-    drives = [{**doc.to_dict(), 'id': doc.id} for doc in drives_ref]
+    # Get all placement drives (removed order_by to avoid index requirement)
+    # Note: If ordering by date is required, create composite index: active (Ascending), date (Ascending)
+    drives_ref = db.collection('placement_drives').stream()
+    drives = []
+    for doc in drives_ref:
+        drive_data = doc.to_dict()
+        # Check if drive is still open for applications
+        if 'last_date_to_apply' in drive_data:
+            last_date = drive_data['last_date_to_apply']
+            if isinstance(last_date, str):
+                try:
+                    last_date = datetime.fromisoformat(last_date.replace('Z', '+00:00'))
+                except:
+                    last_date = datetime.now()
+            
+            if last_date > datetime.now():
+                alias = {**drive_data, 'id': doc.id}
+                alias['position'] = drive_data.get('job_role')
+                alias['deadline'] = drive_data.get('last_date_to_apply')
+                elig = drive_data.get('eligibility_criteria') or {}
+                alias['min_cgpa'] = (elig.get('cgpa') if isinstance(elig, dict) else None)
+                alias['departments'] = (elig.get('departments') if isinstance(elig, dict) else [])
+                alias['requirements'] = drive_data.get('skills_required', [])
+                drives.append(alias)
     
-    # Get training materials
-    training_ref = db.collection('training_materials').order_by('created_at').stream()
-    training_materials = [{**doc.to_dict(), 'id': doc.id} for doc in training_ref]
+    # Sort in Python to avoid Firestore index requirement
+    drives.sort(key=lambda x: x.get('last_date_to_apply', ''))
+    
+    # Get training materials (removed order_by to avoid index requirement)
+    # Note: If ordering by upload_date is required, create composite index: upload_date (Ascending)
+    training_ref = db.collection('training_resources').stream()
+    training_materials = []
+    for tdoc in training_ref:
+        tdata = tdoc.to_dict()
+        alias = {**tdata, 'id': tdoc.id}
+        alias['type'] = tdata.get('resource_type')
+        alias['link'] = tdata.get('resource_url')
+        if 'description' not in alias:
+            tags = tdata.get('tags') or []
+            alias['description'] = ', '.join(tags) if tags else ''
+        training_materials.append(alias)
+    
+    # Sort in Python to avoid Firestore index requirement
+    training_materials.sort(key=lambda x: x.get('upload_date', ''), reverse=True)
     
     return render_template('student_placements.html', user=user, drives=drives, training_materials=training_materials)
 
@@ -336,9 +437,13 @@ def student_messages():
 def officer_drives():
     user = get_current_user()
     
-    # Get all drives posted by this officer
-    drives_ref = db.collection('placement_drives').where('posted_by', '==', user['id']).order_by('created_at').stream()
+    # Get all drives posted by this officer (removed order_by to avoid index requirement)
+    # Note: If ordering by created_at is required, create composite index: posted_by (Ascending), created_at (Ascending)
+    drives_ref = db.collection('placement_drives').where('posted_by', '==', user['id']).stream()
     drives = [{**doc.to_dict(), 'id': doc.id} for doc in drives_ref]
+    
+    # Sort in Python to avoid Firestore index requirement
+    drives.sort(key=lambda x: x.get('created_at', ''), reverse=True)
     
     return render_template('officer_drives.html', user=user, drives=drives)
 
@@ -348,9 +453,13 @@ def officer_drives():
 def officer_training():
     user = get_current_user()
     
-    # Get all training materials posted by this officer
-    materials_ref = db.collection('training_materials').where('posted_by', '==', user['id']).order_by('created_at').stream()
+    # Get all training materials posted by this officer (removed order_by to avoid index requirement)
+    # Note: If ordering by upload_date is required, create composite index: uploaded_by (Ascending), upload_date (Ascending)
+    materials_ref = db.collection('training_resources').where('uploaded_by', '==', user['id']).stream()
     materials = [{**doc.to_dict(), 'id': doc.id} for doc in materials_ref]
+    
+    # Sort in Python to avoid Firestore index requirement
+    materials.sort(key=lambda x: x.get('upload_date', ''), reverse=True)
     
     return render_template('officer_training.html', user=user, materials=materials)
 
@@ -469,7 +578,10 @@ def get_tasks():
                         'title': task.get('task', ''),
                         'due_date': task.get('due_date'),
                         'status': task.get('status', 'pending'),
-                        'plan_id': plan_doc.id
+                        'plan_id': plan_doc.id,
+                        'priority': 'medium',
+                        'description': '',
+                        'completed': task.get('status', 'pending') in ['done', 'completed']
                     })
         
         # Sort by due date
@@ -516,6 +628,14 @@ def create_task():
         db.collection('study_plans').document(plan_doc.id).update(plan_data)
         plan_id = plan_doc.id
     else:
+        # Generate title using Gemini API if not provided
+        if not plan_title or plan_title == 'Study Plan':
+            try:
+                from ai_modules.gemini_config import generate_title
+                plan_title = generate_title(f"Study plan for: {task_title}")
+            except:
+                plan_title = f"Study Plan - {task_title}"
+        
         # Create new plan
         plan_data = {
             'user_id': user['id'],
@@ -536,7 +656,10 @@ def create_task():
         'title': task_title,
         'due_date': due_date,
         'status': 'pending',
-        'plan_id': plan_id
+        'plan_id': plan_id,
+        'priority': 'medium',
+        'description': '',
+        'completed': False
     })
 
 @app.route('/api/tasks/<task_id>', methods=['PUT'])
@@ -644,7 +767,14 @@ def get_drives():
                         last_date = datetime.now()
                 
                 if last_date > datetime.now():
-                    drives.append({**drive_data, 'id': doc.id})
+                    alias = {**drive_data, 'id': doc.id}
+                    alias['position'] = drive_data.get('job_role')
+                    alias['deadline'] = drive_data.get('last_date_to_apply')
+                    elig = drive_data.get('eligibility_criteria') or {}
+                    alias['min_cgpa'] = (elig.get('cgpa') if isinstance(elig, dict) else None)
+                    alias['departments'] = (elig.get('departments') if isinstance(elig, dict) else [])
+                    alias['requirements'] = drive_data.get('skills_required', [])
+                    drives.append(alias)
         
         # Sort by last date to apply
         drives.sort(key=lambda x: x.get('last_date_to_apply', ''))
@@ -662,17 +792,18 @@ def create_drive():
     user = get_current_user()
     data = request.get_json()
     
+    # Schema-compliant document with fallbacks for client field names
     drive_data = {
         'posted_by': user['id'],
         'company_name': data.get('company_name'),
-        'job_role': data.get('position'),
+        'job_role': data.get('position') or data.get('job_role'),
         'description': data.get('description'),
-        'eligibility_criteria': {
-            'cgpa': float(data.get('min_cgpa', 0)),
+        'eligibility_criteria': data.get('eligibility_criteria') or {
+            'cgpa': float(data.get('min_cgpa', 0)) if data.get('min_cgpa') is not None else None,
             'departments': data.get('departments', [])
         },
-        'skills_required': data.get('requirements', []),
-        'last_date_to_apply': data.get('deadline'),
+        'skills_required': data.get('requirements', []) or data.get('skills_required', []),
+        'last_date_to_apply': data.get('deadline') or data.get('last_date_to_apply'),
         'created_at': datetime.now()
     }
     
@@ -726,14 +857,14 @@ def update_drive(drive_id):
     # Update drive
     update_data = {
         'company_name': data.get('company_name'),
-        'job_role': data.get('position'),
+        'job_role': data.get('position') or data.get('job_role'),
         'description': data.get('description'),
-        'eligibility_criteria': {
-            'cgpa': float(data.get('min_cgpa', 0)),
+        'eligibility_criteria': data.get('eligibility_criteria') or {
+            'cgpa': float(data.get('min_cgpa', 0)) if data.get('min_cgpa') is not None else None,
             'departments': data.get('departments', [])
         },
-        'skills_required': data.get('requirements', []),
-        'last_date_to_apply': data.get('deadline'),
+        'skills_required': data.get('requirements', []) or data.get('skills_required', []),
+        'last_date_to_apply': data.get('deadline') or data.get('last_date_to_apply'),
         'updated_at': datetime.now()
     }
     
@@ -773,14 +904,13 @@ def create_training():
     training_data = {
         'uploaded_by': user['id'],
         'title': data.get('title'),
-        'description': data.get('description'),
-        'resource_url': data.get('link'),
+        'upload_date': datetime.now(),
         'resource_type': data.get('type', 'PDF'),
-        'tags': data.get('tags', []),
-        'upload_date': datetime.now()
+        'resource_url': data.get('link'),
+        'tags': data.get('tags', [])
     }
     
-    doc_ref = db.collection('training_materials').add(training_data)
+    doc_ref = db.collection('training_resources').add(training_data)
     training_data['id'] = doc_ref[1].id
     
     return jsonify(training_data)
@@ -793,22 +923,23 @@ def update_training(training_id):
     data = request.get_json()
     
     # Check if training material exists and user owns it
-    training_ref = db.collection('training_materials').document(training_id)
+    training_ref = db.collection('training_resources').document(training_id)
     training_doc = training_ref.get()
     
     if not training_doc.exists:
         return jsonify({'error': 'Training material not found'}), 404
     
     training_data = training_doc.to_dict()
-    if training_data['posted_by'] != user['id']:
+    if training_data['uploaded_by'] != user['id']:
         return jsonify({'error': 'Unauthorized'}), 403
     
     # Update training material
     update_data = {
         'title': data.get('title'),
-        'description': data.get('description'),
-        'link': data.get('link'),
-        'type': data.get('type', 'general'),
+        # Schema-compliant fields
+        'resource_url': data.get('link') or data.get('resource_url'),
+        'resource_type': data.get('type', 'PDF'),
+        'tags': data.get('tags', []),
         'updated_at': datetime.now()
     }
     
@@ -822,14 +953,14 @@ def delete_training(training_id):
     user = get_current_user()
     
     # Check if training material exists and user owns it
-    training_ref = db.collection('training_materials').document(training_id)
+    training_ref = db.collection('training_resources').document(training_id)
     training_doc = training_ref.get()
     
     if not training_doc.exists:
         return jsonify({'error': 'Training material not found'}), 404
     
     training_data = training_doc.to_dict()
-    if training_data['posted_by'] != user['id']:
+    if training_data['uploaded_by'] != user['id']:
         return jsonify({'error': 'Unauthorized'}), 403
     
     # Delete training material
@@ -855,8 +986,20 @@ def get_messages(user_id):
                 (msg_data['sender_id'] == user_id and msg_data['receiver_id'] == current_user['id'])):
                 messages.append({**msg_data, 'id': doc.id})
         
-        # Sort by timestamp
-        messages.sort(key=lambda x: x.get('timestamp', ''))
+        # Normalize timestamp to ISO strings and sort
+        norm_messages = []
+        for m in messages:
+            ts = m.get('timestamp')
+            if hasattr(ts, 'isoformat'):
+                m['timestamp'] = ts.isoformat()
+            elif isinstance(ts, (int, float)):
+                m['timestamp'] = datetime.fromtimestamp(ts).isoformat()
+            else:
+                m['timestamp'] = str(ts or '')
+            norm_messages.append(m)
+
+        norm_messages.sort(key=lambda x: x.get('timestamp', ''))
+        messages = norm_messages
         
     except Exception as e:
         print(f"Error fetching messages: {e}")
@@ -874,13 +1017,14 @@ def send_message():
     message_data = {
         'sender_id': current_user['id'],
         'receiver_id': data.get('receiver_id'),
-        'message': data.get('content'),
+        'message': data.get('message'),
         'timestamp': datetime.now(),
         'seen': False
     }
     
     doc_ref = db.collection('messages').add(message_data)
     message_data['id'] = doc_ref[1].id
+    message_data['timestamp'] = message_data['timestamp'].isoformat()
     
     return jsonify(message_data)
 
@@ -903,7 +1047,7 @@ def update_message(message_id):
     
     # Update message
     update_data = {
-        'content': data.get('content'),
+        'message': data.get('message'),
         'edited_at': datetime.now()
     }
     
@@ -946,8 +1090,8 @@ def mark_message_read(message_id):
     if message_data['receiver_id'] != current_user['id']:
         return jsonify({'error': 'Unauthorized'}), 403
     
-    # Mark message as read
-    message_ref.update({'read': True, 'read_at': datetime.now()})
+    # Mark message as seen (schema field: seen)
+    message_ref.update({'seen': True, 'read_at': datetime.now()})
     return jsonify({'success': True, 'message': 'Message marked as read'})
 
 # ==================== LEGACY ROUTES (for backward compatibility) ====================

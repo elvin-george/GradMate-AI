@@ -245,7 +245,7 @@
                                     
                                     <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                                         <i class="fas fa-calendar"></i>
-                                        <span>Deadline: {{ drive.deadline.strftime('%b %d, %Y') if drive.deadline else 'No deadline' }}</span>
+                                        <span>Deadline: {{ drive.deadline or 'No deadline' }}</span>
                                     </div>
                                     
                                     <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">

@@ -319,7 +319,7 @@
                                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                     <div>
                                         <p class="font-medium text-gray-900 dark:text-white">{{ task.title }}</p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Due: {{ task.due_date.strftime('%b %d, %Y') if task.due_date else 'No due date' }}</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Due: {{ task.due_date or 'No due date' }}</p>
                                     </div>
                                     <span class="px-2 py-1 text-xs font-medium rounded-full 
                                         {% if task.priority == 'high' %}bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400
@@ -364,7 +364,7 @@
                                         </span>
                                     </div>
                                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ drive.position }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Deadline: {{ drive.deadline.strftime('%b %d, %Y') if drive.deadline else 'No deadline' }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Deadline: {{ drive.deadline or 'No deadline' }}</p>
                                 </div>
                                 {% endfor %}
                             </div>
