@@ -1,27 +1,55 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
 from flask_cors import CORS
 import firebase_admin
-from firebase_admin import credentials, firestore, auth
+from firebase_admin import credentials, firestore, auth as admin_auth
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 import os
 import requests
+from dotenv import load_dotenv
 
 # AI modules
 from ai_modules.chatbot import ask_chatbot
 from ai_modules.summarizer import summarize_notes
 from ai_modules.quizgen import generate_quiz
+from ai_modules.gemini_config import generate_tasks_json
 
 # Flask app setup
+load_dotenv()
+
 app = Flask(__name__)
 app.secret_key = 'gradmate_ai_secret_key_2024'  # Change this in production
 CORS(app)
 
-# 🔹 Initialize Firestore
+# 🔹 Initialize Firestore (Admin SDK)
 cred = credentials.Certificate("firebase-key.json")
-firebase_admin.initialize_app(cred)
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
 db = firestore.client()
+
+# 🔹 Pyrebase auth (for email/password sign-in)
+try:
+    from firebase_utils.firebase_config import auth as pyre_auth
+except Exception:
+    pyre_auth = None
+
+# Expose Firebase Web SDK config and current user to templates
+@app.context_processor
+def inject_firebase_web_config():
+    web_config = {
+        'apiKey': os.getenv('FIREBASE_WEB_API_KEY', ''),
+        'authDomain': os.getenv('FIREBASE_AUTH_DOMAIN', ''),
+        'projectId': os.getenv('FIREBASE_PROJECT_ID', ''),
+        'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET', ''),
+        'messagingSenderId': os.getenv('FIREBASE_MESSAGING_SENDER_ID', ''),
+        'appId': os.getenv('FIREBASE_APP_ID', ''),
+        'databaseURL': os.getenv('FIREBASE_DATABASE_URL', '')
+    }
+    return {
+        'FIREBASE_WEB_CONFIG': web_config,
+        'CURRENT_USER_ID': session.get('user_id')
+    }
 
 # Session configuration
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
@@ -41,9 +69,41 @@ def get_current_user():
     return None
 
 # Helper function to require login
+def get_valid_id_token():
+    id_token = session.get('idToken')
+    refresh_token = session.get('refreshToken')
+    if not refresh_token:
+        return None
+    # Verify current token
+    try:
+        if id_token:
+            admin_auth.verify_id_token(id_token)
+            return id_token
+    except Exception:
+        pass
+    # Refresh if needed
+    try:
+        if pyre_auth is not None and refresh_token:
+            refreshed = pyre_auth.refresh(refresh_token)
+            session['idToken'] = refreshed.get('idToken') or refreshed.get('id_token')
+            return session.get('idToken')
+    except Exception:
+        return None
+    return None
+
 def login_required(f):
     def decorated_function(*args, **kwargs):
         if not is_logged_in():
+            return redirect(url_for('login'))
+        token = get_valid_id_token()
+        if not token:
+            session.clear()
+            return redirect(url_for('login'))
+        try:
+            decoded = admin_auth.verify_id_token(token)
+            request.uid = decoded.get('uid')
+        except Exception:
+            session.clear()
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
@@ -75,77 +135,91 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        user_type = data.get('user_type')
-        
+        data = request.get_json() or {}
+        email = (data.get('email') or '').strip()
+        password = data.get('password') or ''
+        user_type = data.get('user_type') or 'student'
+
         try:
-            # Authenticate with Firebase Auth REST to verify password
-            # Requires FIREBASE_WEB_API_KEY env var set from Firebase Console
-            api_key = os.getenv('FIREBASE_WEB_API_KEY')
-            if not api_key:
-                raise Exception('Missing FIREBASE_WEB_API_KEY environment variable')
+            # Sign in with Firebase Authentication (Pyrebase)
+            auth_resp = None
+            if pyre_auth is not None:
+                auth_resp = pyre_auth.sign_in_with_email_and_password(email, password)
+            else:
+                # Fallback: REST API
+                api_key = os.getenv('FIREBASE_WEB_API_KEY')
+                if not api_key:
+                    return jsonify({'success': False, 'message': 'Server auth not configured'})
+                sign_in_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}"
+                resp = requests.post(sign_in_url, json={
+                    'email': email,
+                    'password': password,
+                    'returnSecureToken': True
+                }, timeout=10)
+                if resp.status_code != 200:
+                    return jsonify({'success': False, 'message': 'Invalid email or password'})
+                auth_resp = resp.json()
 
-            sign_in_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}"
-            resp = requests.post(sign_in_url, json={
-                'email': email,
-                'password': password,
-                'returnSecureToken': True
-            }, timeout=10)
-            if resp.status_code != 200:
-                return jsonify({'success': False, 'message': 'Invalid email or password'})
+            uid = auth_resp.get('localId') or auth_resp.get('userId')
+            id_token = auth_resp.get('idToken') or auth_resp.get('id_token')
+            refresh_token = auth_resp.get('refreshToken') or auth_resp.get('refresh_token')
 
-            payload = resp.json()
-            user_record = auth.get_user(payload.get('localId'))
-            
-            # Verify user type matches
-            user_doc = db.collection('users').document(user_record.uid).get()
+            if not uid:
+                return jsonify({'success': False, 'message': 'Authentication failed'})
+
+            # Verify user profile and type
+            user_doc = db.collection('users').document(uid).get()
             if not user_doc.exists:
                 return jsonify({'success': False, 'message': 'User profile not found'})
-            
+
             user_data = user_doc.to_dict()
             if user_data.get('user_type') != user_type:
                 return jsonify({'success': False, 'message': 'Invalid user type for this account'})
-            
-            # Set session data
-            session['user_id'] = user_record.uid
-            session['user_type'] = user_data['user_type']
-            session['user_name'] = user_data['name']
-            
+
+            # Set session with tokens
+            session['user_id'] = uid
+            session['user_type'] = user_data.get('user_type')
+            session['user_name'] = user_data.get('name')
+            if id_token:
+                session['idToken'] = id_token
+            if refresh_token:
+                session['refreshToken'] = refresh_token
+
             return jsonify({'success': True, 'redirect': url_for('dashboard')})
-            
-        except auth.UserNotFoundError:
-            return jsonify({'success': False, 'message': 'User not found'})
+
         except Exception as e:
             print(f"Login error: {e}")
-            return jsonify({'success': False, 'message': 'Authentication failed'})
-    
+            return jsonify({'success': False, 'message': 'Invalid email or password'})
+
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        data = request.get_json()
+        data = request.get_json() or {}
         user_type = data.get('user_type')
-        
+
         # Only allow student signup - officers must be created manually
         if user_type != 'student':
             return jsonify({'success': False, 'message': 'Only students can sign up. Placement officers are pre-created.'})
-        
+
         try:
-            # Create user in Firebase Auth
-            user_record = auth.create_user(
-                email=data.get('email'),
-                password=data.get('password'),
-                display_name=data.get('name')
-            )
-            
+            email = (data.get('email') or '').strip()
+            password = data.get('password') or ''
+            name = (data.get('name') or '').strip()
+
+            # Create user in Firebase Auth via Pyrebase
+            if pyre_auth is None:
+                return jsonify({'success': False, 'message': 'Server auth not configured'})
+
+            created = pyre_auth.create_user_with_email_and_password(email, password)
+            uid = created.get('localId')
+
             # Create user profile in Firestore (without password)
             user_data = {
-                'uid': user_record.uid,
-                'name': data.get('name'),
-                'email': data.get('email'),
+                'uid': uid,
+                'name': name,
+                'email': email,
                 'user_type': 'student',
                 'department': data.get('department'),
                 'cgpa': float(data.get('cgpa', 0)),
@@ -153,23 +227,30 @@ def signup():
                 'resume_url': '',
                 'created_at': datetime.now()
             }
-            
-            # Add user to Firestore using UID as document ID
-            db.collection('users').document(user_record.uid).set(user_data)
-            
-            # Auto-login after signup
-            session['user_id'] = user_record.uid
+
+            db.collection('users').document(uid).set(user_data)
+
+            # Sign in to get tokens
+            auth_resp = pyre_auth.sign_in_with_email_and_password(email, password)
+            id_token = auth_resp.get('idToken') or auth_resp.get('id_token')
+            refresh_token = auth_resp.get('refreshToken') or auth_resp.get('refresh_token')
+
+            # Session
+            session['user_id'] = uid
             session['user_type'] = user_data['user_type']
             session['user_name'] = user_data['name']
-            
+            if id_token:
+                session['idToken'] = id_token
+            if refresh_token:
+                session['refreshToken'] = refresh_token
+
             return jsonify({'success': True, 'redirect': url_for('dashboard')})
-            
-        except auth.EmailAlreadyExistsError:
-            return jsonify({'success': False, 'message': 'Email already registered'})
+
         except Exception as e:
+            # Handle duplicate email and other errors uniformly
             print(f"Signup error: {e}")
             return jsonify({'success': False, 'message': 'Account creation failed'})
-    
+
     return render_template('signup.html')
 
 @app.route('/logout')
@@ -203,15 +284,30 @@ def student_dashboard():
             if 'tasks' in plan_data:
                 for task in plan_data['tasks']:
                     if task.get('status') == 'pending':
+                        # Normalize due_date to datetime or None
+                        raw_due = task.get('due_date')
+                        parsed_due = None
+                        if isinstance(raw_due, str):
+                            try:
+                                parsed_due = datetime.strptime(raw_due.strip(), '%Y-%m-%d')
+                            except Exception:
+                                parsed_due = None
+                        elif hasattr(raw_due, 'isoformat'):
+                            # Firestore Timestamp or datetime
+                            try:
+                                parsed_due = raw_due
+                            except Exception:
+                                parsed_due = None
+
                         upcoming_tasks.append({
                             'id': f"{plan_doc.id}_{task.get('task', '')}",
                             'title': task.get('task', ''),
-                            'due_date': task.get('due_date'),
+                            'due_date': parsed_due,
                             'status': task.get('status', 'pending')
                         })
         
-        # Sort by due date and limit to 5
-        upcoming_tasks.sort(key=lambda x: x.get('due_date', ''))
+        # Sort by due date (None last) and limit to 5
+        upcoming_tasks.sort(key=lambda x: (x.get('due_date') is None, x.get('due_date') or datetime.max))
         upcoming_tasks = upcoming_tasks[:5]
         
     except Exception as e:
@@ -235,11 +331,24 @@ def student_dashboard():
                     except:
                         last_date = datetime.now()
                 
-                if last_date > datetime.now():
+                if last_date > datetime.now(timezone.utc):
                     # Add template-friendly aliases while keeping schema
                     alias = {**drive_data, 'id': doc.id}
                     alias['position'] = drive_data.get('job_role')
-                    alias['deadline'] = drive_data.get('last_date_to_apply')
+                    # Normalize deadline to datetime or None for template strftime
+                    deadline_raw = drive_data.get('last_date_to_apply')
+                    deadline_dt = None
+                    if isinstance(deadline_raw, str):
+                        try:
+                            deadline_dt = datetime.fromisoformat(deadline_raw.replace('Z', '+00:00'))
+                        except Exception:
+                            deadline_dt = None
+                    elif hasattr(deadline_raw, 'isoformat'):
+                        try:
+                            deadline_dt = deadline_raw
+                        except Exception:
+                            deadline_dt = None
+                    alias['deadline'] = deadline_dt
                     elig = drive_data.get('eligibility_criteria') or {}
                     alias['min_cgpa'] = (elig.get('cgpa') if isinstance(elig, dict) else None)
                     alias['departments'] = (elig.get('departments') if isinstance(elig, dict) else [])
@@ -293,10 +402,24 @@ def officer_dashboard():
                     if student_doc.exists:
                         app_data['student_name'] = student_doc.to_dict()['name']
                         app_data['id'] = doc.id
+                        # Normalize applied_at to datetime or None
+                        applied_raw = app_data.get('applied_at')
+                        if isinstance(applied_raw, str):
+                            try:
+                                app_data['applied_at'] = datetime.fromisoformat(applied_raw.replace('Z', '+00:00'))
+                            except Exception:
+                                app_data['applied_at'] = None
+                        elif hasattr(applied_raw, 'isoformat'):
+                            try:
+                                app_data['applied_at'] = applied_raw
+                            except Exception:
+                                app_data['applied_at'] = None
+                        else:
+                            app_data['applied_at'] = None
                         recent_applications.append(app_data)
         
-        # Sort by applied_at and limit to 5
-        recent_applications.sort(key=lambda x: x.get('applied_at', ''), reverse=True)
+        # Sort by applied_at (None last) and limit to 5
+        recent_applications.sort(key=lambda x: (x.get('applied_at') is None, x.get('applied_at') or datetime.min), reverse=True)
         recent_applications = recent_applications[:5]
         
     except Exception as e:
@@ -341,10 +464,23 @@ def student_studyplanner():
         plan_data = plan_doc.to_dict()
         if 'tasks' in plan_data:
             for task in plan_data['tasks']:
+                # Normalize due_date to datetime or None
+                raw_due = task.get('due_date')
+                parsed_due = None
+                if isinstance(raw_due, str):
+                    try:
+                        parsed_due = datetime.strptime(raw_due.strip(), '%Y-%m-%d')
+                    except Exception:
+                        parsed_due = None
+                elif hasattr(raw_due, 'isoformat'):
+                    try:
+                        parsed_due = raw_due
+                    except Exception:
+                        parsed_due = None
                 tasks.append({
                     'id': f"{plan_doc.id}_{task.get('task', '')}",
                     'title': task.get('task', ''),
-                    'due_date': task.get('due_date'),
+                    'due_date': parsed_due,
                     'status': task.get('status', 'pending'),
                     'plan_id': plan_doc.id,
                     'priority': 'medium',
@@ -352,8 +488,8 @@ def student_studyplanner():
                     'completed': task.get('status', 'pending') in ['done', 'completed']
                 })
     
-    # Sort in Python to avoid Firestore index requirement
-    tasks.sort(key=lambda x: x.get('due_date', ''))
+    # Sort in Python to avoid Firestore index requirement (None last)
+    tasks.sort(key=lambda x: (x.get('due_date') is None, x.get('due_date') or datetime.max))
     
     return render_template('student_studyplanner.html', user=user, tasks=tasks)
 
@@ -385,7 +521,7 @@ def student_placements():
                 except:
                     last_date = datetime.now()
             
-            if last_date > datetime.now():
+            if last_date > datetime.now(timezone.utc):
                 alias = {**drive_data, 'id': doc.id}
                 alias['position'] = drive_data.get('job_role')
                 alias['deadline'] = drive_data.get('last_date_to_apply')
@@ -541,7 +677,8 @@ def quiz_api():
     user = get_current_user()
     data = request.get_json()
     text = data.get('text', '')
-    quiz = generate_quiz(text)
+    num_questions = data.get('num_questions', 5)
+    quiz = generate_quiz(text, num_questions)
     
     # Track AI usage
     try:
@@ -557,6 +694,78 @@ def quiz_api():
         print(f"Error tracking AI usage: {e}")
     
     return jsonify({'quiz': quiz})
+
+# ==================== STUDY PLANNER AI TASK GENERATION ====================
+
+@app.route('/api/studyplan/generate', methods=['POST'])
+@login_required
+@require_user_type('student')
+def generate_study_tasks():
+    user = get_current_user()
+    data = request.get_json() or {}
+    study_request = data.get('request') or ''
+    num_tasks = data.get('num_tasks', 5)
+
+    # Ask Gemini to produce strict JSON
+    raw = generate_tasks_json(study_request, num_tasks)
+
+    # Parse JSON safely
+    try:
+        parsed = json.loads(raw)
+        tasks = parsed.get('tasks') or []
+    except Exception:
+        return jsonify({'error': 'Failed to parse AI response'}), 400
+
+    if not isinstance(tasks, list) or not tasks:
+        return jsonify({'error': 'No tasks generated'}), 400
+
+    # Upsert a single study plan for the user
+    existing_plans = db.collection('study_plans').where('user_id', '==', user['id']).limit(1).stream()
+    plan_doc = None
+    for doc in existing_plans:
+        plan_doc = doc
+        break
+
+    if plan_doc:
+        plan_data = plan_doc.to_dict()
+        if 'tasks' not in plan_data:
+            plan_data['tasks'] = []
+        # Normalize tasks
+        for t in tasks:
+            plan_data['tasks'].append({
+                'task': t.get('task'),
+                'due_date': t.get('due_date'),
+                'status': t.get('status') or 'pending'
+            })
+        db.collection('study_plans').document(plan_doc.id).update(plan_data)
+        plan_id = plan_doc.id
+    else:
+        plan_data = {
+            'user_id': user['id'],
+            'title': data.get('title') or 'Study Plan',
+            'created_on': datetime.now(timezone.utc),
+            'tasks': [{
+                'task': t.get('task'),
+                'due_date': t.get('due_date'),
+                'status': t.get('status') or 'pending'
+            } for t in tasks]
+        }
+        doc_ref = db.collection('study_plans').add(plan_data)
+        plan_id = doc_ref[1].id
+
+    # Track AI usage
+    try:
+        db.collection('ai_usage').add({
+            'user_id': user['id'],
+            'tool_used': 'study_tasks_ai',
+            'timestamp': datetime.now(timezone.utc),
+            'input_summary': (study_request[:100] + '...') if len(study_request) > 100 else study_request,
+            'ai_response': (raw[:200] + '...') if len(raw) > 200 else raw
+        })
+    except Exception as e:
+        print(f"Error tracking AI usage (study tasks): {e}")
+
+    return jsonify({'success': True, 'plan_id': plan_id, 'tasks_added': len(tasks)})
 
 # ==================== STUDY PLANNER API ====================
 
@@ -766,7 +975,7 @@ def get_drives():
                     except:
                         last_date = datetime.now()
                 
-                if last_date > datetime.now():
+                if last_date > datetime.now(timezone.utc):
                     alias = {**drive_data, 'id': doc.id}
                     alias['position'] = drive_data.get('job_role')
                     alias['deadline'] = drive_data.get('last_date_to_apply')
